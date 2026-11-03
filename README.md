@@ -1,29 +1,28 @@
-# NEG – Verhandlungsspiel
+# NEG - Negotiation game
 
-Eigenständige erste Grundlage für ein späteres Minispiel im Sachsenkrieg von
-„DieFranken“. Der Spielkern ist eine C++17-Bibliothek; `NegInit` erlaubt das
-Ausprobieren auf der Kommandozeile. Keine externen Bibliotheken und keine
-Netzwerkzugriffe zur Laufzeit.
-Programmausgaben, Fehlermeldungen und Codekommentare sind ausschließlich englisch;
-die Dokumentation ist deutsch.
+A standalone foundation for a future minigame in the Saxon War campaign of
+"DieFranken". The game core is a C++17 library; `NegInit` provides a command-line
+interface for trying it out. No external libraries or runtime network access
+are required. Program output, error messages, code comments, and documentation
+are in English.
 
-## Regeln
+## Rules
 
-Zu Beginn werden unterschiedliche verfügbare Waren zufällig ausgewählt. Jede
-Position der geheimen Folge wird unabhängig und gleichverteilt mit einer dieser
-Waren besetzt. Wiederholungen sind erlaubt; verfügbare Waren müssen nicht alle
-vorkommen. Die Geheimfolge bleibt während der Partie verborgen.
+At startup, distinct available goods are selected at random. Each position in the
+secret sequence is filled independently and uniformly with one of these goods.
+Repeated goods are allowed, and not every available good has to appear in the
+sequence. The secret stays hidden during the game.
 
-| Kennung | Ware | Englischer Name |
-|---|---|---|
-| W | Feuerholz | Wood |
-| F | Nahrung | Food |
-| P | Stämme | Pole |
-| T | Balken | Timber |
-| B | Bretter | Board |
-| S | Stroh | Straw |
+| Code | Good |
+|---|---|
+| W | Wood |
+| F | Food |
+| P | Pole |
+| T | Timber |
+| B | Board |
+| S | Straw |
 
-| Schwierigkeit | Verfügbare Waren | Positionen | Maximale Versuche |
+| Difficulty | Available goods | Positions | Maximum attempts |
 |---|---:|---:|---:|
 | 1 | 3 | 3 | 3 |
 | 2 | 3 | 4 | 3 |
@@ -33,25 +32,25 @@ vorkommen. Die Geheimfolge bleibt während der Partie verborgen.
 | 6 | 5 | 6 | 5 |
 | 7 | 6 | 6 | 6 |
 
-Pro Versuch genau einen verfügbaren Warenbuchstaben je Position eingeben.
-Groß- und Kleinschreibung werden akzeptiert; Leerraum an den Rändern wird
-entfernt. Interner Leerraum, falsche Länge und nicht verfügbare Waren sind Fehler.
-Die Konsole beendet sich dann sofort; der Kern verbraucht keinen Versuch.
+Enter exactly one available goods letter per position for each attempt. Uppercase
+and lowercase are accepted, and leading and trailing whitespace is removed.
+Internal whitespace, incorrect length, and unavailable goods are errors. The CLI
+exits immediately on invalid input; the core does not consume an attempt.
 
-`X` bedeutet richtige Ware an genau dieser Position, `-` eine falsche Ware.
-Es gibt keine Hinweise auf andere Positionen und keine gesperrten Positionen.
-Nach jedem gültigen Versuch erscheinen Feedback und verbleibende Versuche.
-Eine vollständig richtige Eingabe gewinnt, auch beim letzten Versuch. Ansonsten
-endet die Partie nach Ausschöpfen der Versuche mit Niederlage und Aufdeckung.
-Die Versuchszahl entspricht der Warenanzahl und erlaubt systematischen Ausschluss;
-ein Solver oder eine automatische Hilfe ist nicht enthalten.
+`X` means the correct good at that exact position; `-` means an incorrect good.
+There are no hints about other positions, and correct positions are not locked.
+After each valid attempt, feedback and the remaining attempt count are displayed.
+A completely correct guess wins, including on the final attempt. Otherwise, using
+all attempts ends the game in defeat and reveals the secret. The attempt limit
+matches the number of available goods, allowing systematic elimination. No solver
+or automatic assistance is included.
 
-## Bauen und testen
+## Build and test
 
-Voraussetzungen: CMake ab 3.16 und ein C++17-Compiler.
+Requirements: CMake 3.16 or later and a C++17 compiler.
 
-Windows mit Visual Studio 2022 und installierter C++-Desktopentwicklung,
-im Repository-Verzeichnis:
+On Windows with Visual Studio 2022 and the Desktop development with C++ workload,
+run these commands from the repository directory:
 
 ```powershell
 cmake -S . -B build -G "Visual Studio 17 2022" -A x64
@@ -60,7 +59,7 @@ ctest --test-dir build -C Release --output-on-failure
 .\build\Release\NegInit.exe 1
 ```
 
-Linux mit GCC:
+On Linux with GCC:
 
 ```sh
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
@@ -69,12 +68,12 @@ ctest --test-dir build --output-on-failure
 ./build/NegInit 1
 ```
 
-Für CMake 3.16 kann CTest alternativ direkt im Build-Verzeichnis gestartet werden:
-`cd build` und `ctest -C Release --output-on-failure`.
+With CMake 3.16, run CTest directly from the build directory instead:
+`cd build`, then `ctest -C Release --output-on-failure`.
 
-## Beispiel
+## Example
 
-Illustrativer Ablauf für verfügbare Waren `WFS` und Geheimfolge `WFF`:
+Illustrative session with available goods `WFS` and secret sequence `WFF`:
 
 ```text
 Available goods: WFS
@@ -90,52 +89,52 @@ Feedback: XXX | Remaining attempts: 0
 You won!
 ```
 
-Waren und Geheimfolge werden beim normalen Start zufällig erzeugt; dieser Ablauf
-ist als fester Aufbau im Kerntest abgedeckt. Ein reproduzierbarer CLI-Fehlerablauf
-unter PowerShell ist `"???" | .\build\Release\NegInit.exe 1`: Nach den Startdaten
-erscheint eine Fehlermeldung, `$LASTEXITCODE` ist 2. Unter Linux entsprechend
+Normal startup generates the available goods and secret at random. The session
+above is covered by a fixed setup in the core tests. A reproducible CLI error
+case in PowerShell is `"???" | .\build\Release\NegInit.exe 1`: startup information
+is followed by an error message, and `$LASTEXITCODE` is 2. On Linux, use
 `printf '???\n' | ./build/NegInit 1`.
 
-| Exitcode | Bedeutung |
+| Exit code | Meaning |
 |---|---|
-| 0 | Gewonnen |
-| 1 | Verloren |
-| 2 | Aufruf-/Eingabefehler, vorzeitiges Eingabeende oder Initialisierungsfehler |
+| 0 | Win |
+| 1 | Defeat |
+| 2 | Invocation/input error, premature end of input, or initialization error |
 
-Genau ein Startparameter ist erlaubt: eine Ziffer von `1` bis `7`. Andere
-Schreibweisen wie `01` oder `+1` werden abgelehnt. Bei Aufruffehlern erscheint
-zusätzlich ein Nutzungshinweis. EOF während einer laufenden Partie ist ein Fehler.
+Exactly one startup argument is accepted: a single digit from `1` to `7`.
+Other forms such as `01` or `+1` are rejected. Invocation errors also display a
+usage hint. EOF while a game is still running is an error.
 
-## Aufbau und Schnittstelle
+## Structure and API
 
-- `include/neg/game.hpp`, `src/game.cpp`: Konfiguration, Zufallserzeugung,
-  Validierung, Bewertung, Versuchszähler und Status ohne Konsolen-Ein-/Ausgabe.
-- `src/main.cpp`: Parameterprüfung, Einlesen, Anzeigen und Prozess-Exitcodes.
-- `tests/`: Tests ohne externe Testbibliothek, über CTest ausführbar.
+- `include/neg/game.hpp`, `src/game.cpp`: configuration, random generation,
+  validation, evaluation, attempt counts, and status without console I/O.
+- `src/main.cpp`: argument validation, input, output, and process exit codes.
+- `tests/`: tests without an external test library, integrated with CTest.
 
-`neg::Game(difficulty)` verwendet `std::mt19937` mit einem Seed aus
-`std::random_device`. `neg::Game(difficulty, seed)` ermöglicht reproduzierbare
-Initialisierung ohne zusätzlichen CLI-Parameter. Die genaue erzeugte Folge muss
-nicht zwischen verschiedenen Standardbibliotheken übereinstimmen, da Shuffle und
-Verteilungen implementationsabhängig sein können.
+`neg::Game(difficulty)` uses `std::mt19937` seeded by `std::random_device`.
+`neg::Game(difficulty, seed)` provides reproducible initialization without an
+additional CLI argument. The exact sequence may differ between standard library
+implementations because shuffle and distribution implementations can differ.
 
-`neg::Game(difficulty, availableGoods, secret)` erlaubt feste Bewertungsfälle und
-prüft Anzahl, eindeutige feste Warenkennungen sowie Länge und Inhalt der Folge.
-Dieser Konstruktor erwartet Großbuchstaben. Fehlerhafte Konstruktorargumente
-werfen `std::invalid_argument`. `submit()` liefert Annahme, Feedback und eine
-Fehlermeldung; abgelehnte Eingaben ändern keinen Zustand. Nach Spielende werden
-alle weiteren Versuche abgelehnt. Getter geben Status und Versuchszähler zurück.
-Der lesende Zugriff auf `secret()` dient Tests und der Aufdeckung nach Niederlage;
-eine spätere Oberfläche ist für das Verbergen während der Partie verantwortlich.
-Eine Unreal-Oberfläche kann die Bibliothek ohne Änderung der Spiellogik verwenden.
+`neg::Game(difficulty, availableGoods, secret)` supports fixed evaluation cases
+and validates the goods count, distinct predefined goods codes, and the length
+and contents of the secret. This constructor expects uppercase letters. Invalid
+constructor arguments throw `std::invalid_argument`. `submit()` returns whether
+an attempt was accepted, feedback, and an error message. Rejected input does not
+change state. All attempts after the game has ended are rejected. Getters expose
+the status and attempt counts. Read-only access through `secret()` supports tests
+and revealing the secret after defeat; a future interface is responsible for
+hiding it during play. An Unreal interface can use the library without changing
+the game logic.
 
-## Prüfstand
+## Verification
 
-Die Grundlage wurde unter Windows mit Visual Studio 2022/MSVC in Release gebaut
-und mit CTest geprüft. Kerntests prüfen alle Konfigurationen, Erzeugungsinvarianten
-für feste Seeds, reproduzierbare Initialisierung, konkrete Feedbackfälle,
-Validierung und Endzustände. CLI-Tests prüfen fehlerhafte Parameter, ungültige
-Eingaben und EOF. Linux/GCC wurde in dieser Umgebung nicht ausgeführt.
+The project was built in Release mode on Windows with Visual Studio 2022/MSVC
+and verified with CTest. Core tests cover all configurations, generation
+invariants for fixed seeds, reproducible initialization, specific feedback
+cases, validation, and final states. CLI tests cover invalid arguments, invalid
+input, and EOF. Linux/GCC was not tested in this environment.
 
-Nicht enthalten sind Unreal-Anbindung, grafische Oberfläche, Warenverbrauch,
-Spielstände, Datenbank und Netzwerk.
+Unreal integration, a graphical interface, goods consumption, saved games, a
+database, and networking are outside the scope of this foundation.
